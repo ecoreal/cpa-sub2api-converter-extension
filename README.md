@@ -84,6 +84,11 @@ sh package-extension.sh
 （含 JS 模块依赖），引用缺失的文件会直接报错；输出生成在
 `dist/cpa-to-sub2api-extension-<version>.zip`，可直接上传 Chrome Web Store。
 
+## 贡献
+
+见 [CONTRIBUTING.md](CONTRIBUTING.md)；安全问题按 [SECURITY.md](SECURITY.md)
+私密报告。
+
 ## 上架前还需要补的内容
 
 - 把 `privacy-policy.md` 发布到一个公开可访问的 URL

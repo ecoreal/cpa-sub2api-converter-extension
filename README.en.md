@@ -109,6 +109,11 @@ fails on any missing reference; output goes to
 `dist/cpa-to-sub2api-extension-<version>.zip`, ready for the Chrome Web
 Store.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md); report security issues privately per
+[SECURITY.md](SECURITY.md).
+
 ## Before publishing to the store
 
 - Publish `privacy-policy.md` at a publicly reachable URL.
