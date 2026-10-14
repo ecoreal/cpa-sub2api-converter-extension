@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CPA Converter</title>
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <main class="popup-shell">
+      <p class="eyebrow">CPA Converter</p>
+      <h1>本地批量转换到 sub2api</h1>
+      <p class="intro">
+        这是一个离线工作的扩展页面，适合处理包含 token 的账号 JSON。
+      </p>
+
+      <div class="card-grid">
+        <section class="card">
+          <span class="card-label">模式</span>
+          <strong>纯本地转换</strong>
+        </section>
+        <section class="card">
+          <span class="card-label">支持</span>
+          <strong>批量 / 目录 / 筛选</strong>
+        </section>
+      </div>
+
+      <a class="button button-primary" href="./dashboard.html" target="_blank" rel="noreferrer">
+        打开工作台
+      </a>
+
+      <ol class="steps">
+        <li>打开工作台后导入 `*.json` 文件或整个目录。</li>
+        <li>按需填写 `type` 过滤条件，例如 `codex`。</li>
+        <li>确认预览后下载 `sub2api-account-{timestamp}.json`。</li>
+      </ol>
+    </main>
+
+    <script src="./popup.js"></script>
+  </body>
+</html>

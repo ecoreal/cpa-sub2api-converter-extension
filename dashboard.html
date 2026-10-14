@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CPA Converter Workspace</title>
+    <link rel="stylesheet" href="./dashboard.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Browser Extension Workspace</p>
+          <h1>批量转换 CPA 账号，不离开浏览器</h1>
+          <p class="hero-text">
+            文件导入、目录导入、按 type 过滤、结果预览和 JSON 下载都在扩展页面本地完成。
+          </p>
+        </div>
+        <div class="hero-card">
+          <div class="hero-stat">
+            <span class="hero-stat-value" id="hero-valid-count">0</span>
+            <span class="hero-stat-label">有效账号</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-value" id="hero-invalid-count">0</span>
+            <span class="hero-stat-label">跳过文件</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-value" id="hero-type-count">-</span>
+            <span class="hero-stat-label">筛选类型</span>
+          </div>
+        </div>
+      </header>
+
+      <nav class="tab-bar">
+        <button type="button" class="tab-btn active" data-tab="forward">CPA → sub2api</button>
+        <button type="button" class="tab-btn" data-tab="reverse">sub2api → CPA</button>
+      </nav>
+
+      <main class="workspace">
+        <!-- Tab: CPA → sub2api -->
+        <div class="tab-panel active" id="tab-forward">
+          <section class="panel panel-dropzone">
+            <div class="panel-head">
+              <h2>导入文件</h2>
+              <p>支持多个 JSON 文件、拖拽导入和整目录导入。</p>
+            </div>
+
+            <label class="dropzone" id="dropzone">
+              <input id="file-input" type="file" accept=".json,application/json" multiple />
+              <input
+                id="directory-input"
+                type="file"
+                accept=".json,application/json"
+                multiple
+                webkitdirectory
+                directory
+              />
+              <span class="dropzone-title">拖拽 `*.json` 到这里</span>
+              <span class="dropzone-subtitle">
+                扩展不会上传你的 token，所有数据只在当前浏览器扩展页里解析。
+              </span>
+              <div class="dropzone-actions">
+                <button type="button" class="button button-primary" id="pick-files">
+                  选择文件
+                </button>
+                <button type="button" class="button button-secondary" id="pick-directory">
+                  选择目录
+                </button>
+              </div>
+            </label>
+
+            <div class="controls">
+              <label class="field">
+                <span class="field-label">按 type 过滤</span>
+                <input
+                  id="type-filter"
+                  class="field-input"
+                  type="text"
+                  placeholder="例如 codex，不填则全部转换"
+                />
+              </label>
+              <label class="field">
+                <span class="field-label">文件名前缀</span>
+                <input
+                  id="filename-prefix"
+                  class="field-input"
+                  type="text"
+                  value="sub2api-account"
+                  placeholder="默认 sub2api-account"
+                />
+              </label>
+            </div>
+
+            <div class="privacy-note">
+              <strong>本地模式：</strong>
+              转换逻辑内置在扩展中。只有点击下方远程上传按钮时，才会请求你配置的服务。
+            </div>
+
+            <section class="remote-panel">
+              <div class="remote-head">
+                <div>
+                  <h3>远程上传</h3>
+                  <p>把已导入的 CPA JSON 发送到 CLIProxyAPI，或把转换结果导入 sub2api。</p>
+                </div>
+                <button type="button" class="button button-ghost" id="save-remote-settings">
+                  保存配置
+                </button>
+              </div>
+
+              <div class="remote-service">
+                <div class="remote-service-title">
+                  <span>CLIProxyAPI</span>
+                  <small>POST /v0/management/auth-files</small>
+                </div>
+                <label class="field">
+                  <span class="field-label">Base URL</span>
+                  <input
+                    id="cliproxy-base-url"
+                    class="field-input"
+                    type="url"
+                    placeholder="例如 http://127.0.0.1:8080"
+                  />
+                </label>
+                <label class="field">
+                  <span class="field-label">Management Key</span>
+                  <input
+                    id="cliproxy-management-key"
+                    class="field-input"
+                    type="password"
+                    autocomplete="off"
+                    placeholder="MANAGEMENT_PASSWORD / 管理密钥"
+                  />
+                </label>
+                <div class="remote-actions">
+                  <button type="button" class="button button-secondary" id="test-cliproxy" disabled>
+                    测试连接
+                  </button>
+                  <button type="button" class="button button-primary" id="upload-cliproxy" disabled>
+                    上传原始 JSON
+                  </button>
+                </div>
+              </div>
+
+              <div class="remote-service">
+                <div class="remote-service-title">
+                  <span>sub2api</span>
+                  <small>POST /api/v1/admin/accounts/data</small>
+                </div>
+                <label class="field">
+                  <span class="field-label">Base URL</span>
+                  <input
+                    id="sub2api-base-url"
+                    class="field-input"
+                    type="url"
+                    placeholder="例如 http://127.0.0.1:3000"
+                  />
+                </label>
+                <label class="field">
+                  <span class="field-label">API 前缀</span>
+                  <input
+                    id="sub2api-api-prefix"
+                    class="field-input"
+                    type="text"
+                    value="/api/v1"
+                    placeholder="默认 /api/v1"
+                  />
+                </label>
+                <label class="field">
+                  <span class="field-label">Admin API Key</span>
+                  <input
+                    id="sub2api-admin-key"
+                    class="field-input"
+                    type="password"
+                    autocomplete="off"
+                    placeholder="sub2api 管理员 API Key"
+                  />
+                </label>
+                <label class="toggle-field">
+                  <input id="sub2api-skip-default-group" type="checkbox" checked />
+                  <span>导入时跳过默认分组绑定</span>
+                </label>
+                <div class="remote-actions">
+                  <button type="button" class="button button-secondary" id="test-sub2api" disabled>
+                    测试连接
+                  </button>
+                  <button type="button" class="button button-primary" id="upload-sub2api" disabled>
+                    导入转换结果
+                  </button>
+                </div>
+              </div>
+
+              <div class="upload-status" id="upload-status">尚未上传。</div>
+            </section>
+          </section>
+
+          <section class="panel panel-results">
+            <div class="panel-head panel-head-inline">
+              <div>
+                <h2>转换结果</h2>
+                <p id="summary-text">尚未导入文件。</p>
+              </div>
+              <div class="result-actions">
+                <button type="button" class="button button-secondary" id="clear-all">
+                  清空
+                </button>
+                <button type="button" class="button button-primary" id="download-output" disabled>
+                  下载 JSON
+                </button>
+              </div>
+            </div>
+
+            <div class="results-grid">
+              <section class="subpanel">
+                <h3>有效文件</h3>
+                <div class="scroll-area">
+                  <table class="result-table">
+                    <thead>
+                      <tr>
+                        <th>文件</th>
+                        <th>type</th>
+                        <th>邮箱</th>
+                        <th>账号名</th>
+                      </tr>
+                    </thead>
+                    <tbody id="valid-table-body">
+                      <tr class="empty-row">
+                        <td colspan="4">暂无数据</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section class="subpanel">
+                <h3>跳过 / 错误</h3>
+                <div class="scroll-area">
+                  <ul class="issue-list" id="issue-list">
+                    <li class="empty-issue">暂无问题</li>
+                  </ul>
+                </div>
+              </section>
+            </div>
+
+            <section class="subpanel output-preview">
+              <div class="output-head">
+                <h3>输出预览</h3>
+                <button type="button" class="button button-ghost" id="copy-output" disabled>
+                  复制内容
+                </button>
+              </div>
+              <pre id="output-preview">{
+  "type": "sub2api-data",
+  "version": 1,
+  "exported_at": "",
+  "proxies": [],
+  "accounts": []
+}</pre>
+            </section>
+          </section>
+        </div>
+
+        <!-- Tab: sub2api → CPA -->
+        <div class="tab-panel" id="tab-reverse">
+          <section class="panel panel-dropzone">
+            <div class="panel-head">
+              <h2>导入 sub2api 文件</h2>
+              <p>支持批量导入 sub2api 格式 JSON，自动反向解析为 CPA 原始格式。</p>
+            </div>
+
+            <label class="dropzone" id="reverse-dropzone">
+              <input id="reverse-file-input" type="file" accept=".json,application/json" multiple />
+              <input
+                id="reverse-directory-input"
+                type="file"
+                accept=".json,application/json"
+                multiple
+                webkitdirectory
+                directory
+              />
+              <span class="dropzone-title">拖拽 sub2api `*.json` 文件到这里</span>
+              <span class="dropzone-subtitle">支持批量导入，自动反向解析为 CPA 原始格式。</span>
+              <div class="dropzone-actions">
+                <button type="button" class="button button-primary" id="reverse-pick-files">
+                  选择文件
+                </button>
+                <button type="button" class="button button-secondary" id="reverse-pick-directory">
+                  选择目录
+                </button>
+                <button type="button" class="button button-accent" id="reverse-convert" disabled>
+                  反向转换
+                </button>
+              </div>
+            </label>
+
+            <div class="controls">
+              <label class="field">
+                <span class="field-label">type 默认值</span>
+                <input
+                  id="reverse-type-fallback"
+                  class="field-input"
+                  type="text"
+                  value="codex"
+                  placeholder="默认 codex，无法从文件名提取时使用"
+                />
+              </label>
+              <label class="field">
+                <span class="field-label">文件名前缀</span>
+                <input
+                  id="reverse-filename-prefix"
+                  class="field-input"
+                  type="text"
+                  value="cpa"
+                  placeholder="默认 cpa"
+                />
+              </label>
+            </div>
+
+            <div id="reverse-summary-text" class="summary-text">尚未导入文件。</div>
+
+            <section class="remote-panel">
+              <div class="remote-head">
+                <div>
+                  <h3>上传到 CLIProxyAPI</h3>
+                  <p>将反向转换得到的 CPA 单文件直接上传到 CLIProxyAPI 服务。</p>
+                </div>
+                <button type="button" class="button button-primary" id="reverse-upload-cliproxy" disabled>
+                  上传 CPA 文件
+                </button>
+              </div>
+              <div class="upload-status" id="reverse-upload-status">尚未上传。</div>
+            </section>
+          </section>
+
+          <section class="panel panel-results">
+            <div class="panel-head panel-head-inline">
+              <div>
+                <h3>反向转换结果</h3>
+              </div>
+              <div class="result-actions">
+                <button type="button" class="button button-ghost" id="reverse-clear">
+                  清空
+                </button>
+                <button type="button" class="button button-secondary" id="download-individual" disabled>
+                  逐个下载
+                </button>
+                <button type="button" class="button button-primary" id="download-zip" disabled>
+                  打包 ZIP 下载
+                </button>
+              </div>
+            </div>
+
+            <div class="results-grid">
+              <section class="subpanel">
+                <div class="scroll-area">
+                  <table class="result-table">
+                    <thead>
+                      <tr>
+                        <th>文件名</th>
+                        <th>邮箱</th>
+                        <th>type</th>
+                        <th>操作</th>
+                      </tr>
+                    </thead>
+                    <tbody id="reverse-table-body">
+                      <tr class="empty-row">
+                        <td colspan="4">尚未转换</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section class="subpanel">
+                <h3>跳过 / 错误</h3>
+                <div class="scroll-area">
+                  <ul class="issue-list" id="reverse-issue-list">
+                    <li class="empty-issue">暂无问题</li>
+                  </ul>
+                </div>
+              </section>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="./converter-core.js"></script>
+    <script src="./remote-request.js"></script>
+    <script src="./dashboard.js"></script>
+  </body>
+</html>
